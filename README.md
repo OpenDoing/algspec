@@ -9,6 +9,6 @@
 ![](https://img.shields.io/badge/SpecDB-MongoDB-yellow "规约类子存储的数据库")
 ![](https://img.shields.io/badge/version-V0.1-orange "项目版本号")
 # 项目架构图
-![image](https://github.com/OpenDoing/algspec/image/Architecture.png)
+![image](https://github.com/OpenDoing/algspec/blob/master/image/Architecture.png)
 
 
