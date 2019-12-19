@@ -13,10 +13,17 @@ public class StringCon {
     public static String EMPTY = "";
     public static String DOT = ".";
     public static String LINE = "_";
-    public static String INTERGER = "Integer";
     public static String ASSERT = "Assert";
     public static String IS = "is";
     public static String EQUAL = "=";
     public static String TRUE = "true";
+
+    // 数据类型
+    public static String INTERGER = "Integer";
+    public static String STRING = "String";
+    public static String DATE = "Date";
+    public static String BOOLEAN = "Boolean";
+    public static String Double = "Double";
+
 
 }

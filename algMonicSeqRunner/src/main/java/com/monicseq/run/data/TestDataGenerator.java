@@ -1,6 +1,10 @@
 package com.monicseq.run.data;
 
-import java.util.Random;
+import com.monicseq.run.data.generator.DateGenerator;
+import com.monicseq.run.data.generator.DoubleGenerator;
+import com.monicseq.run.data.generator.IntegerGenerator;
+import com.monicseq.run.data.generator.StringGenerator;
+import com.monicseq.run.util.StringCon;
 
 /**
  * 随机策略生成数据
@@ -10,33 +14,18 @@ import java.util.Random;
  */
 public class TestDataGenerator {
 
-    /**
-     * 随机生成0到100的随机int值
-     *
-     * @return 随机int值
-     */
-    public static int getRandomInt() {
-        int min = 1;
-        int max = 100;
-        int intrandom = min + ((int) (new Random().nextFloat() * (max - min)));
-        return intrandom;
+    public static TestData typeRunner(String type) {
+        if (StringCon.INTERGER.equals(type)){
+            return new IntegerGenerator();
+        } else if (StringCon.STRING.equals(type)){
+            return new StringGenerator();
+        } else if (StringCon.DATE.equals(type)){
+            return new DateGenerator();
+        } else if (StringCon.Double.equals(type)){
+            return new DoubleGenerator();
+        }
+        return null;
     }
-
-    /**
-     * 随机生成min - max的整型数据
-     * @param min 最小值
-     * @param max 最大值
-     * @return 区间随机值
-     */
-    public static int getRandomInt(int min,int max) {
-        return min + ((int) (new Random().nextFloat() * (max - min)));
-    }
-
-
-    public static void main(String[] args) {
-        getRandomInt();
-    }
-
 
 
 }

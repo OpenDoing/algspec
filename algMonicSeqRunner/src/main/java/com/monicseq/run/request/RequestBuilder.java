@@ -2,6 +2,7 @@ package com.monicseq.run.request;
 
 import com.alibaba.fastjson.JSONObject;
 import com.monicseq.run.data.TestDataGenerator;
+import com.monicseq.run.data.generator.IntegerGenerator;
 import com.monicseq.run.util.StringCon;
 
 import java.util.HashMap;
@@ -75,8 +76,8 @@ public class RequestBuilder {
                 attrs.put(var, param.get(varname + StringCon.DOT +  var));
             } else {
                 // 调用数据生成模块，随机生成参数
-                if ("Integer".equals(attrs.get(var))){
-                    attrs.put(var, TestDataGenerator.getRandomInt(1, 10));
+                if (StringCon.INTERGER.equals(attrs.get(var))){
+                    attrs.put(var, IntegerGenerator.getRandomInt(1, 10));
                 }
             }
         }
