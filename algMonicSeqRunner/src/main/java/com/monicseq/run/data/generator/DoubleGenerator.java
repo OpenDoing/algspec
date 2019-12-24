@@ -3,7 +3,7 @@ package com.monicseq.run.data.generator;
 import java.util.Random;
 
 /**
- * comment here
+ * 小数随机
  *
  * @author Duyining
  * @date 2019/12/18

@@ -53,11 +53,11 @@ public class RequestBuilder {
     private static String initUrlParam(String specName) {
         //TODO: 对接接口
         if ("GetArrReq".equals(specName)) {
-            return "http://localhost:8001/array";
+            return "http://47.100.124.249:8001/array";
         } else if ("InsertReq".equals(specName)) {
-            return "http://localhost:8001/array/insert2";
+            return "http://47.100.124.249:8001/array/insert2";
         } else if ("DelReq".equals(specName)){
-            return "http://localhost:8001/array/del2";
+            return "http://47.100.124.249:8001/array/del2";
         }
         return "";
     }

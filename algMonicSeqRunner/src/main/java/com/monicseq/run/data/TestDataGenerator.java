@@ -14,7 +14,7 @@ import com.monicseq.run.util.StringCon;
  */
 public class TestDataGenerator {
 
-    public static TestData typeRunner(String type) {
+    public static Object typeRunner(String type) {
         if (StringCon.INTERGER.equals(type)){
             return new IntegerGenerator();
         } else if (StringCon.STRING.equals(type)){

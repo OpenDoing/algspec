@@ -1,10 +1,14 @@
 package com.monicseq.run.seq;
 
 import com.monicseq.run.data.TestDataGenerator;
+import com.monicseq.run.data.generator.IntegerGenerator;
 import com.monicseq.run.request.HttpRequest;
 import com.monicseq.run.request.Request;
 import com.monicseq.run.request.RequestBuilder;
 import com.monicseq.run.request.RequestExecutor;
+import com.monicseq.run.request.method.GetRequest;
+import com.monicseq.run.strategy.intercept.MyInterceptor;
+import com.monicseq.run.strategy.proxy.ProxyBean;
 import com.monicseq.run.util.FileUtil;
 import com.monicseq.run.util.Util;
 import lombok.extern.slf4j.Slf4j;
@@ -111,9 +115,11 @@ public class MonicSeqHandle {
         int right = s.indexOf(")");
         String ps = s.substring(left+1,right);
         Request request = RequestBuilder.buildReq(ps,reqs, param);
-        HttpRequest httpRequest = RequestExecutor.getReqRunner(request.getMethod());
+//        HttpRequest httpRequest = RequestExecutor.getReqRunner(request.getMethod());
         String url = request.getUrl();
-        return httpRequest.sendRequest(url, request.getParams());
+        HttpRequest helloService = RequestExecutor.getReqRunner(request.getMethod());
+        HttpRequest proxy = (HttpRequest) ProxyBean.getProxyBean(helloService, MyInterceptor.getInstance());
+        return proxy.sendRequest(url, request.getParams());
     }
 
     private static boolean handleAssert(String s) {
@@ -145,14 +151,13 @@ public class MonicSeqHandle {
     }
 
     private static boolean handleIsEqual(String param1, String param2) {
-//        System.out.println("param1:" + param1 + "param2:" + param2);
         // 两个都是服务请求参数
         if (param1.contains(DOT) && param2.contains(DOT)) {
             // 参数没有进行初始化
             if (!param.containsKey(param1) && !param.containsKey(param2)) {
                 // 如果数据类型是整型
                 if (INTERGER.equals(getParamType(param1))) {
-                    String temp = Integer.toString(TestDataGenerator.getRandomInt(1,3));
+                    int temp = IntegerGenerator.getRandomInt(1,3);
                     param.put(param1, temp);
                     param.put(param2, temp);
                     return true;

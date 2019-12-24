@@ -46,10 +46,11 @@ public class ProxyBean implements InvocationHandler {
 	 */
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws IllegalAccessException, InterruptedException, InvocationTargetException {
+		this.interceptor.before();
 		//异常标识
 		boolean exceptionFlag = false;
 		Invocation invocation = new Invocation(target, method, args);
-		Object retObj = null; 
+		Object retObj = null;
 		try {
 			if (this.interceptor.useAround()) {
 				retObj = this.interceptor.around(invocation);
@@ -62,7 +63,7 @@ public class ProxyBean implements InvocationHandler {
 		}
 		this.interceptor.after();
 		if (exceptionFlag) {
-			this.interceptor.afterThrowing();
+            this.interceptor.afterThrowing(invocation);
 		} else {
 			this.interceptor.afterReturning();
 			return retObj;

@@ -54,6 +54,7 @@ public class MyInterceptor implements Interceptor {
 	@Override
 	public boolean before() {
 		System.out.println("before ......");
+		turl.setStart(System.currentTimeMillis());
 		return true;
 	}
 
@@ -73,7 +74,7 @@ public class MyInterceptor implements Interceptor {
 	@Override
 	public Object around(Invocation invocation) throws InvocationTargetException, IllegalAccessException {
 		turl.setInvocation(invocation);
-		turl.setStart(System.currentTimeMillis());
+//		turl.setStart(System.currentTimeMillis());
 //		log.info("param:{} method:{} target:{}", invocation.getParams(), invocation.getMethod(),invocation.getTarget());
 		String url = invocation.getParams()[0].toString();
 		turl.setUrl(url);
@@ -153,23 +154,34 @@ public class MyInterceptor implements Interceptor {
 	}
 
 	@Override
-	public String afterThrowing() throws InvocationTargetException, IllegalAccessException, InterruptedException {
+	public String afterThrowing(Invocation invocation) throws InvocationTargetException, IllegalAccessException, InterruptedException {
 		System.out.println("服务请求出现了意外");
-		int already = map.get(turl.getUrl()).getAlrtimes();
-		map.get(turl.getUrl()).setAlrtimes(already+1);
-		if (map.get(turl.getUrl()).getAlrtimes() < ConfigInfo.MAXTIMES){
-			// 程序虽然出了问题，可能为临时性故障
-			// 重试次数没有达到阈值，可以采用重试策略
-			this.around(turl.getInvocation());
-		} else if (map.get(turl.getUrl()).getReject() > ConfigInfo.MAXREJECT){
-			// 超过了定义的重试阈值，并且还高于定义的拒绝访问率阈值，
-			// 程序彻底崩了，采用队列缓存策略
-			return "QUEUECATCH";
-		} else {
-			// 流量控制，限制发送速率
-			Thread.sleep(1000);
-			this.around(turl.getInvocation());
-		}
+		//URL 为空时的处理逻辑
+        if (map.get(turl.getUrl())==null){
+            StateInfo stateInfo = new StateInfo();
+            // 显示标明为1 因为这是该URL第一次出现问题
+            stateInfo.setAlrtimes(1);
+            map.put(turl.getUrl(), stateInfo);
+        } else {
+            int already = map.get(turl.getUrl()).getAlrtimes();
+            map.get(turl.getUrl()).setAlrtimes(already+1);
+        }
+        if (map.get(turl.getUrl()).getAlrtimes() < ConfigInfo.MAXTIMES){
+            // 程序虽然出了问题，可能为临时性故障
+            // 重试次数没有达到阈值，可以采用重试策略
+            System.out.println("excep:" + invocation.getParams()[0].toString());
+//            myInterceptor.around(invocation);
+            return "RETRY";
+        } else if (map.get(turl.getUrl()).getReject() > ConfigInfo.MAXREJECT){
+            // 超过了定义的重试阈值，并且还高于定义的拒绝访问率阈值，
+            // 程序彻底崩了，采用队列缓存策略
+            log.error("请求出错url:{}", turl.getUrl());
+            return "QUEUECATCH";
+        } else {
+            // 流量控制，限制发送速率
+            Thread.sleep(1000);
+            myInterceptor.around(turl.getInvocation());
+        }
 		return "";
 	}
 

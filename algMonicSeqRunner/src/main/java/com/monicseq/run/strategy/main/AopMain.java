@@ -22,13 +22,19 @@ public class AopMain {
 		HttpRequest helloService = new GetRequest();
 		HttpRequest proxy = (HttpRequest) ProxyBean.getProxyBean(helloService, MyInterceptor.getInstance());
 		HashMap hashMap = new HashMap(1);
-		hashMap.put("id", 1);
+		hashMap.put("id", 100);
+		HashMap hashMap3 = new HashMap(1);
+		hashMap3.put("id", 1);
 		HashMap hashMap2 = new HashMap(1);
 		hashMap2.put("id", 2);
 		for (int i = 0;i<20;i++){
-			proxy.sendRequest("http://47.100.124.249:8001/array",hashMap);
-			Thread.sleep(1000);
-			proxy.sendRequest("http://47.100.124.249:8001/array/min",hashMap2);
+			if (i<5){
+				proxy.sendRequest("http://47.100.124.249:8001/array",hashMap);
+			}else {
+				proxy.sendRequest("http://47.100.124.249:8001/array",hashMap3);
+			}
+//			Thread.sleep(1000);
+//			proxy.sendRequest("http://47.100.124.249:8001/array/min",hashMap2);
 		}
 	}
 

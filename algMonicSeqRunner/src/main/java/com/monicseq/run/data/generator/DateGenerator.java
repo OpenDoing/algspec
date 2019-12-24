@@ -1,7 +1,7 @@
 package com.monicseq.run.data.generator;
 
 /**
- * comment here
+ * 日期随机生成器
  *
  * @author Duyining
  * @date 2019/12/18
