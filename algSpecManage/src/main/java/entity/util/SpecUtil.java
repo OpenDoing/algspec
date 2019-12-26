@@ -118,8 +118,28 @@ public class SpecUtil {
             Term rterm = new Term();
             rterm.setTerm(handleEqu(ax)[1]);
             equation.setRterm(rterm);
+            equation.setRelation(getRealationMark(ax));
         }
         list.add(equation);
+    }
+
+    /**
+     * 给定字符串，查看等式的关系
+     * @param str 字符串等式
+     * @return 关系
+     */
+    public static String getRealationMark(String str){
+        if (str.contains("=")){
+            return "=";
+        } else if (str.contains(">")){
+            return ">";
+        }else if (str.contains("<")){
+            return "<";
+        }else if (str.contains("<>")){
+            return "<>";
+        }else {
+            return "";
+        }
     }
 
     /**
@@ -164,6 +184,7 @@ public class SpecUtil {
         Term rterm = new Term();
         rterm.setTerm(lr[1]);
         conditions.setRterm(rterm);
+        conditions.setRelation(getRealationMark(condition));
         return conditions;
     }
 

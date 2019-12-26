@@ -18,7 +18,7 @@ public class Conditions {
     /**
      * 两个项之间的关系
      */
-    private Relation relation;
+    private String relation;
 
     public Term getLterm() {
         return lterm;
@@ -36,11 +36,11 @@ public class Conditions {
         this.rterm = rterm;
     }
 
-    public Relation getRelation() {
+    public String getRelation() {
         return relation;
     }
 
-    public void setRelation(Relation relation) {
+    public void setRelation(String relation) {
         this.relation = relation;
     }
 

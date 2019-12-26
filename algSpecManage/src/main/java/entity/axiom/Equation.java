@@ -20,7 +20,7 @@ public class Equation {
     /**
      * 两个项之间的关系
      */
-    private Relation relation;
+    private String relation;
     /**
      * 条件，大于等于0个
      */
@@ -42,11 +42,11 @@ public class Equation {
         this.rterm = rterm;
     }
 
-    public Relation getRelation() {
+    public String getRelation() {
         return relation;
     }
 
-    public void setRelation(Relation relation) {
+    public void setRelation(String relation) {
         this.relation = relation;
     }
 

@@ -6,17 +6,16 @@ package entity.axiom;
  * @author Duyining
  * @date 2019/8/2
  */
-public enum Relation {
-    // =
-    EQUAL,
-    // <>
-    NOTEQUAL,
-    // <
-    LESSTHAN,
-    // >
-    GREATERTHAN,
-    // <=
-    LTEQUAL,
-    // >=
-    GTEQUAL;
+@Deprecated
+public class Relation {
+
+    private String relation;
+
+    public String getRelation() {
+        return relation;
+    }
+
+    public void setRelation(String relation) {
+        this.relation = relation;
+    }
 }
