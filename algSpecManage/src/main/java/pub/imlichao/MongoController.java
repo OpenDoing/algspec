@@ -1,7 +1,9 @@
 package pub.imlichao;
 
+import com.alibaba.fastjson.JSON;
 import entity.Spec;
 import entity.SpecPackage;
+import entity.axiom.Equation;
 import entity.build.AbstractBuilder;
 import entity.build.SpecBuilder;
 import entity.build.SpecDirector;
@@ -9,11 +11,9 @@ import entity.util.FileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.mongodb.client.model.Aggregates.match;
 import static com.mongodb.client.model.Aggregates.unwind;
 
 @RestController
@@ -55,6 +54,33 @@ public class MongoController {
             }
         }
         return "nonono";
+    }
+
+    @GetMapping(value = "/attr")
+    public String getAttr(@RequestParam String packageName,@RequestParam String specName) {
+        Query query = new Query(Criteria.where("packageName").is(packageName));
+        SpecPackage specPackage = mongoTemplate.findOne(query, SpecPackage.class);
+        for (Spec s:specPackage.getSpecs()) {
+            if (s.getSpecName().equals(specName)){
+//                String attr = s.getSignature().getAttributes().getAttrs().toString();
+//                // 此处的字符处理是和fastjson.JSON对接，JSON只能把：变为hashmap
+//                return attr.replaceAll("=", ":");
+                return JSON.toJSONString(s.getSignature().getAttributes().getAttrs());
+            }
+        }
+        return "";
+    }
+
+    @GetMapping(value = "/axiom")
+    public List<Equation> getAxiom(@RequestParam String packageName, @RequestParam String specName) {
+        Query query = new Query(Criteria.where("packageName").is(packageName));
+        SpecPackage specPackage = mongoTemplate.findOne(query, SpecPackage.class);
+        for (Spec s:specPackage.getSpecs()) {
+            if (s.getSpecName().equals(specName)){
+                return s.getAxioms().getEquations();
+            }
+        }
+        return null;
     }
 
     //新增文档
@@ -117,7 +143,7 @@ public class MongoController {
 //        mongoTemplate.insert(spec);
 
 
-        String specDoc = FileUtil.read("D:\\1NJUST\\大论文\\paper\\casestudy\\BasicSpec.txt");
+        String specDoc = FileUtil.read("D:\\1NJUST\\大论文\\paper\\casestudy\\req.txt");
         String[] specs = specDoc.split("Spec");
         SpecPackage specPackage = new SpecPackage();
         List<Spec> list = new ArrayList<>();
@@ -133,7 +159,7 @@ public class MongoController {
         }
         System.out.println(list.get(0));
         specPackage.setSpecs(list);
-        specPackage.setPackageName("com.Array");
+        specPackage.setPackageName("com.Array.req");
         mongoTemplate.insert(specPackage);
         return "redirect:/find";
     }
