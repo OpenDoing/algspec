@@ -1,5 +1,7 @@
 package com.monicseq.run.data.generator;
 
+import com.monicseq.run.data.TestData;
+
 import java.util.Random;
 
 /**
@@ -8,14 +10,15 @@ import java.util.Random;
  * @author Duyining
  * @date 2019/12/18
  */
-public class StringGenerator {
+public class StringGenerator implements TestData{
 
     private static String ALLCHAR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     /**
      * 随机字符串，0-10位
      * @return 字符串
      */
-    public static String getRandomString() {
+    @Override
+    public Object getRandom() {
         Random random = new Random();
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < new Random().nextInt(10); i++) {
@@ -23,6 +26,11 @@ public class StringGenerator {
             sb.append(StringGenerator.ALLCHAR.charAt(number));
         }
         return sb.toString();
+    }
+
+    @Override
+    public Object getRandom(Object o1, Object o2) {
+        return null;
     }
 
     /**
@@ -44,4 +52,5 @@ public class StringGenerator {
     public static void main(String[] args) {
         System.out.println(getRandomString(5,13));
     }
+
 }

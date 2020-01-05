@@ -1,5 +1,7 @@
 package com.monicseq.run.data.generator;
 
+import com.monicseq.run.data.TestData;
+
 import java.util.Random;
 
 /**
@@ -8,7 +10,7 @@ import java.util.Random;
  * @author Duyining
  * @date 2019/12/18
  */
-public class IntegerGenerator {
+public class IntegerGenerator implements TestData{
 
     /**
      * 随机生成int值
@@ -51,7 +53,18 @@ public class IntegerGenerator {
     }
 
     public static void main(String[] args) {
-        System.out.println(getLessInt(3));
+        IntegerGenerator integerGenerator = new IntegerGenerator();
+
+        System.out.println(integerGenerator.getRandom(9, 5));
     }
 
+    @Override
+    public Object getRandom() {
+        return new Random().nextInt();
+    }
+
+    @Override
+    public Object getRandom(Object o1, Object o2) {
+        return Integer.parseInt(o1.toString()) + ((int) (new Random().nextFloat() * (Integer.parseInt(o2.toString())-Integer.parseInt(o1.toString()))));
+    }
 }
