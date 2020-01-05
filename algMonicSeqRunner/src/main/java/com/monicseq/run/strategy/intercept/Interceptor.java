@@ -37,7 +37,7 @@ public interface Interceptor {
 	/**
 	 * 事后异常方法，当事件发生异常后执行
 	 */
-	String afterThrowing(Invocation invocation) throws InvocationTargetException, IllegalAccessException, InterruptedException;
+	String afterThrowing();
 
 	/**
 	 * 是否使用around方法取代原有方法

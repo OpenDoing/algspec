@@ -154,7 +154,7 @@ public class MyInterceptor implements Interceptor {
 	}
 
 	@Override
-	public String afterThrowing(Invocation invocation) throws InvocationTargetException, IllegalAccessException, InterruptedException {
+	public String afterThrowing() {
 		System.out.println("服务请求出现了意外");
 		//URL 为空时的处理逻辑
         if (map.get(turl.getUrl())==null){
@@ -169,8 +169,6 @@ public class MyInterceptor implements Interceptor {
         if (map.get(turl.getUrl()).getAlrtimes() < ConfigInfo.MAXTIMES){
             // 程序虽然出了问题，可能为临时性故障
             // 重试次数没有达到阈值，可以采用重试策略
-            System.out.println("excep:" + invocation.getParams()[0].toString());
-//            myInterceptor.around(invocation);
             return "RETRY";
         } else if (map.get(turl.getUrl()).getReject() > ConfigInfo.MAXREJECT){
             // 超过了定义的重试阈值，并且还高于定义的拒绝访问率阈值，
@@ -179,10 +177,8 @@ public class MyInterceptor implements Interceptor {
             return "QUEUECATCH";
         } else {
             // 流量控制，限制发送速率
-            Thread.sleep(1000);
-            myInterceptor.around(turl.getInvocation());
+			return "RATE";
         }
-		return "";
 	}
 
 	/**
