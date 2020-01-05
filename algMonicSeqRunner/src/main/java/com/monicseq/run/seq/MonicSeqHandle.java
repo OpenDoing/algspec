@@ -1,5 +1,6 @@
 package com.monicseq.run.seq;
 
+import com.monicseq.run.data.SpecReqParam;
 import com.monicseq.run.data.TestDataGenerator;
 import com.monicseq.run.data.generator.IntegerGenerator;
 import com.monicseq.run.request.HttpRequest;
@@ -43,6 +44,11 @@ public class MonicSeqHandle {
     public static String EQUAL = "=";
     public static String TRUE = "true";
 
+    /**
+     * 测试数据生成器读取类子生成的数据集
+     */
+    public static Map<String,Map<String,Object>> tdata = new HashMap<>(16);
+
 
     /**
      * 序列中用到的所有参数
@@ -51,7 +57,9 @@ public class MonicSeqHandle {
 
     /**
      * 全局变量表
+     * TODO:删除全局变量表的方案，采取测试数据生成器生成的数据集
      */
+    @Deprecated
     public static Map<String,String> reqs = new HashMap<>(16);
 
     public static void initGlobal(String s) {
@@ -153,17 +161,15 @@ public class MonicSeqHandle {
     private static boolean handleIsEqual(String param1, String param2) {
         // 两个都是服务请求参数
         if (param1.contains(DOT) && param2.contains(DOT)) {
-            // 参数没有进行初始化
+            // 参数列表中没有这两个参数，需要将参数放进来
             if (!param.containsKey(param1) && !param.containsKey(param2)) {
-                // 如果数据类型是整型
-                if (INTERGER.equals(getParamType(param1))) {
-                    int temp = IntegerGenerator.getRandomInt(1,3);
-                    param.put(param1, temp);
-                    param.put(param2, temp);
-                    return true;
-                } else {
-                    // 其他数据类型的策略
-                }
+                String vname1 = param1.substring(0,param1.indexOf(DOT));
+                String vparam1 = param1.substring(param1.indexOf(DOT)+1);
+                // 获取测试数据生成器中的数据
+                HashMap param3 = (HashMap)tdata.get(vname1).get("params");
+                param.put(param1, param3.get(vparam1));
+                param.put(param2, param3.get(vparam1));
+                return true;
             } else if (param.containsKey(param1) || param.containsKey(param2)) {
                 // 如果其中一个参数已经初始化，则将初始化的值赋给未初始化的参数
                 if (param.containsKey(param1)) {
@@ -191,6 +197,9 @@ public class MonicSeqHandle {
         return "Integer";
     }
 
+    /**
+     * 展示参数变量列表的键值对
+     */
     public static void getPrams(){
         Iterator iterator = param.entrySet().iterator();
         while (iterator.hasNext()) {
@@ -202,9 +211,15 @@ public class MonicSeqHandle {
     }
 
     public static void main(String[] args) throws IOException{
+        SpecReqParam specReqParam = new SpecReqParam();
+        String test = "For all as:ArrayService,greq:GetArrReq,ireq:InsertReq,dreq:DelReq That";
+        MonicSeqHandle.tdata = specReqParam.buildReq(test, "com.Array.req");
+
         initGlobal("For all as:ArrayService,greq:GetArrReq,ireq:InsertReq,dreq:DelReq That");
+        // 序列执行起点
         getSeq("D:\\1NJUST\\大论文\\paper\\casestudy\\monicArray.txt");
         getPrams();
+
     }
 
 }

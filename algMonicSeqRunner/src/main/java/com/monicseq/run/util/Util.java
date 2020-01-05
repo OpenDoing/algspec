@@ -11,21 +11,7 @@ import java.util.Map;
  */
 public class Util {
 
-    public static Map<String,String> getGlobalVarMap(String str) {
-        Map<String,String> var = new HashMap<>(16);
-        int begin = str.indexOf("all");
-        int end = str.indexOf("That");
-        String temp =str.substring(begin+4,end);
-        String[] req = temp.split(",");
-        for (String s :req){
-            System.out.println(s);
-        }
-        for (int i = 1;i< req.length;i++) {
-            String[] kv = req[i].split(":");
-            var.put(kv[0], kv[1]);
-        }
-        return var;
-    }
+
 
     /**
      * 服务请求的格式定义
@@ -44,7 +30,7 @@ public class Util {
         for (int i = 1;i< req.length;i++) {
             String[] kv = req[i].split(":");
             HashMap<String,Object> request = new HashMap<>();
-            request = findParmBySpec(kv[1]);
+            //request = findParmBySpec(kv[1]);
             request.putAll((findReqBySpec(kv[1])));
             reqformat.put(kv[0], request);
         }
@@ -65,25 +51,7 @@ public class Util {
         return reqformat;
     }
 
-    /**
-     * 通过类子名称查询Attr属性
-     * @param specName 类子名
-     * @return Attr属性键值对
-     */
-    public static HashMap<String,Object> findParmBySpec(String specName){
-        HashMap<String,Object> param = new HashMap<>();
-//        if ("GetArrReq".equals(specName)){
-//            param.put("id", "Integer");
-//        } else if ("InsertReq".equals(specName)) {
-//            param.put("id", "Integer");
-//            param.put("index", "Integer");
-//            param.put("ele", "Integer");
-//        }else if ("DelReq".equals(specName)) {
-//            param.put("id", "Integer");
-//            param.put("index", "Integer");
-//        }
-        return param;
-    }
+
 
     /**
      * 通过类子名称查询在公理中声明的服务接口信息
