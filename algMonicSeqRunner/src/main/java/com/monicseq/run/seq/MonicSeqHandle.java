@@ -1,5 +1,8 @@
 package com.monicseq.run.seq;
 
+import com.doing.compare.Comparator;
+import com.doing.compare.CompareType;
+import com.doing.compare.adapter.CompareAdapter;
 import com.monicseq.run.data.SpecReqParam;
 import com.monicseq.run.data.TestDataGenerator;
 import com.monicseq.run.data.generator.IntegerGenerator;
@@ -122,12 +125,23 @@ public class MonicSeqHandle {
         int left = s.indexOf("(");
         int right = s.indexOf(")");
         String ps = s.substring(left+1,right);
-        Request request = RequestBuilder.buildReq(ps,reqs, param);
-//        HttpRequest httpRequest = RequestExecutor.getReqRunner(request.getMethod());
+        Request request = RequestBuilder.buildReq(ps,tdata);
         String url = request.getUrl();
         HttpRequest helloService = RequestExecutor.getReqRunner(request.getMethod());
-        HttpRequest proxy = (HttpRequest) ProxyBean.getProxyBean(helloService, MyInterceptor.getInstance());
-        return proxy.sendRequest(url, request.getParams());
+//        HttpRequest proxy = (HttpRequest) ProxyBean.getProxyBean(helloService, MyInterceptor.getInstance());
+////        String proRes = proxy.sendRequest(url, request.getParams());
+////        String res = handleProxyResult(proRes,request,proxy);
+        String res = helloService.sendRequest(url, request.getParams());
+        return res;
+    }
+
+    private static String handleProxyResult(String res, Request request, HttpRequest proxy) {
+        if ("RETRY".equals(res)){
+            return proxy.sendRequest(request.getUrl(), request.getParams());
+        }else if ("RETRY".equals(res)){
+
+        }
+        return res;
     }
 
     private static boolean handleAssert(String s) {
@@ -149,12 +163,16 @@ public class MonicSeqHandle {
         if (ISEQUAL.equals(type)) {
             return handleIsEqual(params[0],params[1]);
         } else if(ISSUBSET.equals(type)) {
-
+            return handleIsSubset(params[0],params[1]);
         } else if (ISSAME.equals(type)) {
 
         } else {
             // ......
         }
+        return true;
+    }
+
+    private static boolean handleIsSubset(String param, String param1) {
         return true;
     }
 
@@ -187,6 +205,8 @@ public class MonicSeqHandle {
             // 如果类似这种形式 isEq(_7,_10)
             String pa1 = result.get(param1).toString();
             String pa2 = result.get(param2).toString();
+//            Comparator comparator = new CompareAdapter();
+//            return comparator.compare(pa1, pa2, CompareType.EQUAL).isFlag();
             return pa1.equals(pa2);
         }
         return false;
@@ -215,7 +235,7 @@ public class MonicSeqHandle {
         String test = "For all as:ArrayService,greq:GetArrReq,ireq:InsertReq,dreq:DelReq That";
         MonicSeqHandle.tdata = specReqParam.buildReq(test, "com.Array.req");
 
-        initGlobal("For all as:ArrayService,greq:GetArrReq,ireq:InsertReq,dreq:DelReq That");
+//        initGlobal("For all as:ArrayService,greq:GetArrReq,ireq:InsertReq,dreq:DelReq That");
         // 序列执行起点
         getSeq("D:\\1NJUST\\大论文\\paper\\casestudy\\monicArray.txt");
         getPrams();
