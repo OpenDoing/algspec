@@ -3,6 +3,7 @@ package com.monicseq.run.request.method;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monicseq.run.request.HttpRequest;
+import com.monicseq.run.request.Request;
 import com.monicseq.run.request.RestTemplateConfig;
 import com.monicseq.run.util.RequestUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -58,5 +59,10 @@ public class PutRequest implements HttpRequest {
             log.error("JSONProcessing  解析错误");
         }
         return "success";
+    }
+
+    @Override
+    public String sendRequest(Request request) {
+        return null;
     }
 }

@@ -1,6 +1,7 @@
 package com.monicseq.run.request.method;
 
 import com.monicseq.run.request.HttpRequest;
+import com.monicseq.run.request.Request;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -74,6 +75,11 @@ public class PostRequest implements HttpRequest {
 
     @Override
     public String sendRequest(String url, HashMap params, HttpHeaders headers) {
+        return null;
+    }
+
+    @Override
+    public String sendRequest(Request request) {
         return null;
     }
 

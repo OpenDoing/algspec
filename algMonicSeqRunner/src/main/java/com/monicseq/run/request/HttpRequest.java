@@ -42,5 +42,5 @@ public interface HttpRequest {
      * @return 服务响应结果
      */
     String sendRequest(String url, HashMap params, HttpHeaders headers);
-
+    String sendRequest(Request request);
 }

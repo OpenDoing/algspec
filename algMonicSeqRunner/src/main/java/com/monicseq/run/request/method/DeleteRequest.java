@@ -1,6 +1,7 @@
 package com.monicseq.run.request.method;
 
 import com.monicseq.run.request.HttpRequest;
+import com.monicseq.run.request.Request;
 import com.monicseq.run.request.RestTemplateConfig;
 import com.monicseq.run.util.RequestUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,11 @@ public class DeleteRequest implements HttpRequest {
 
     @Override
     public String sendRequest(String url, HashMap params, HttpHeaders headers) {
+        return null;
+    }
+
+    @Override
+    public String sendRequest(Request request) {
         return null;
     }
 }

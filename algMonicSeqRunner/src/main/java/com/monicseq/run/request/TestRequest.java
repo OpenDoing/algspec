@@ -14,15 +14,15 @@ public class TestRequest {
     public static void main(String[] args) {
         //"http://localhost:8001/array/ele?id={id}&index={index}"
         HashMap params = new HashMap();
-        params.put("id",1 );
-        params.put("index",2 );
-        params.put("ele", 43);
-        HttpRequest httpRequest = RequestExecutor.getReqRunner("put");
-        httpRequest.sendRequest("http://localhost:8001/array/modify",params);
+        params.put("format","json" );
+        params.put("_t","1579601014758" );
+        params.put("activity", "ttkx");
+        HttpRequest httpRequest = RequestExecutor.getReqRunner("get");
+        httpRequest.sendRequest("https://answer-quark.sm.cn/answer/curr",params);
 
-        HashMap params2 = new HashMap();
-        params2.put("id",5);
-        HttpRequest delRequest = RequestExecutor.getReqRunner("delete");
-        delRequest.sendRequest("http://localhost:8001/array/del",params2);
+//        HashMap params2 = new HashMap();
+//        params2.put("id",5);
+//        HttpRequest delRequest = RequestExecutor.getReqRunner("delete");
+//        delRequest.sendRequest("http://localhost:8001/array/del",params2);
     }
 }

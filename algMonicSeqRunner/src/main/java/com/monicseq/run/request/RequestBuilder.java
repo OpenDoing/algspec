@@ -16,15 +16,17 @@ import java.util.Map;
  */
 public class RequestBuilder {
 
-    public static Request buildReq(String varname, Map<String, String> reqs, Map<String, Object> param) {
+    public static Request buildReq(String varname, Map<String, Map<String, Object>> reqs) {
         Request request = new Request();
-        String specName = reqs.get(varname.trim());
         // 查询数据库,类子的attr属性列表  eg GetArray
-        HashMap<String,Object> attrs = findSpecAttr(specName.trim());
-        initReqParam(varname,attrs,param);
-        request.setParams(attrs);
-        request.setUrl(initUrlParam(specName));
-        request.setMethod(initMethodParam(specName));
+        HashMap<String,Object> params =(HashMap) reqs.get(varname).get("params");
+        HashMap<String,Object> general =(HashMap) reqs.get(varname).get("general");
+        request.setParams(params);
+        // 去除字符串中的双引号
+        String url = general.get("url").toString().replaceAll("\"", "");
+        String method = general.get("method").toString().replaceAll("\"", "");
+        request.setUrl(url);
+        request.setMethod(method);
         return request;
 }
 
@@ -33,8 +35,8 @@ public class RequestBuilder {
      * @param specName 类子名称
      * @return method
      */
+    @Deprecated
     private static String initMethodParam(String specName) {
-        //TODO: 对接接口
         if ("GetArrReq".equals(specName)) {
             return "Get";
         } else if ("InsertReq".equals(specName)) {
@@ -50,6 +52,7 @@ public class RequestBuilder {
      * @param specName 类子名称
      * @return url
      */
+    @Deprecated
     private static String initUrlParam(String specName) {
         //TODO: 对接接口
         if ("GetArrReq".equals(specName)) {
@@ -68,6 +71,7 @@ public class RequestBuilder {
      * @param attrs 类子中的属性
      * @param param if条件中已经初始化的参数列表
      */
+    @Deprecated
     private static void initReqParam(String varname,HashMap<String, Object> attrs, Map<String, Object> param) {
         // attrs 的形式为  id：Integer  index：Integer  ele：Integer
         for (String var:attrs.keySet()){
@@ -88,6 +92,7 @@ public class RequestBuilder {
      * @param specName 类子名称
      * @return attr
      */
+    @Deprecated
     private static HashMap<String,Object> findSpecAttr(String specName) {
         //TODO: 对接接口
         HashMap<String,Object> param = new HashMap<>(16);
