@@ -1,0 +1,1037 @@
+/**
+* JJTree file
+*/
+
+options {
+  JDK_VERSION = "1.5";
+  JAVA_UNICODE_ESCAPE=true;
+  UNICODE_INPUT=true;
+  STATIC=false;
+}
+ 
+PARSER_BEGIN(Grammar) 
+package service.asParse;
+
+import java.io.*;
+import java.util.*;
+
+public class Grammar {
+ 
+  	static String specName;                     //文件夹名
+  	static String subSpecName;                  //文件名
+  	static String userName;
+
+  	static SpecSysTab specST;                     
+  	static SortSysTab sortST;    //存当前sort
+  	static AttrUnit attrOp;
+  	static OperUnit operOp;
+  	static AxiomSet axSet;
+  	static AxiomUnit axUnit;
+  	
+  	static VarSysTab varST;
+  	static EquationSysTab globalEST;
+  	static CondEquation condEST;
+  	static LetEquation letEST;
+  	static ConditionSysTab conST;
+  	static String isGEorLE="GE";
+  	
+  	static SortSysTab tpSortST;
+  	
+  	static String CurrSN;
+  	static String currOper;
+
+  	static String termString;
+  	
+  	static ArrayList<String> paraTypeList;
+  		
+  	static Stack<String> stSort;        //存贮term中类子名栈
+  	static Stack<String> stOper;        //存贮term中操作名栈
+  	static boolean isLB=false;          //标志当前表达式是否在中括号中
+  	
+  	static TypeException eTE;
+  	static String returnMessege;
+}
+PARSER_END(Grammar)
+
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+| <"/*" (~["*"])* "*" (~["/"] (~["*"])* "*")* "/">
+}
+
+TOKEN : 
+{
+    <POSITIVEINT_TKN:["0"-"9"](["0"-"9"])* >
+
+  | <REAL_TKN: ("-")?["1"-"9"](["0"-"9"])*"."["0"-"9"](["0"-"9"])*>
+
+}
+
+TOKEN :
+{
+  <SPEC_TKN: "Spec"|"spec">
+| <SIG_TKN: "Signature"|"signature">
+| <DEF_TKN: "Definition"|"definition">
+| <AXIOM_TKN: "Axiom"|"axiom">
+| <OBSERVABLE_TKN: "IsObservedBy"|"isobservedby">
+| <UNOBSERVABLE_TKN: "Unobservable"|"unobservable">
+| <EXTENDS_TKN: "extends">
+| <USES_TKN: "uses">
+| <CONST_TKN: "Const"|"const">
+| <VAR_TKN: "Var"|"var"|"Attr"|"attr">
+| <OPERATORS_TKN: "Operation"|"operation">
+| <END_TKN: "End"|"end"> 
+| <VOID_TKN: "Void"|"void">
+| <FORALL_TKN: "For all"|"for all"|"forall">
+| <THAT_TKN: "that"|"That">
+| <IF_TKN: "If"|"if" >
+| <LET_TKN: "Let"|"let">
+| <IN_TKN: "in"|"In">
+
+| <LEFTBRACE_TKN: "{">
+| <RIGHTBRACE_TKN: "}">
+| <SEMICOLON_TKN: ";">
+| <COMMA_TKN: ",">
+| <SELECTOR_TKN: ":">
+| <LEFTBRACKET_TKN: "[">
+| <RIGHTBRACKET_TKN: "]">
+| <BETWEEN_TKN: "..">
+| <LEFTPAREN_TKN: "(">
+| <RIGHTPAREN_TKN: ")">
+
+| <NULL_TKN: "Null"|"null" >
+| <TRUE_TKN: "True"|"true" >
+| <FALSE_TKN: "False"|"false">
+
+| <BOOLEAN_TKN: "Boolean"|"Bool"|"boolean"|"bool">
+| <INTEGER_TKN: "Integer"|"integer"|"int"|"Int">
+| <LONG_TKN: "Long"|"long">
+| <STRING_TKN: "String"|"string">
+| <DATETIME_TKN: "Datetime"|"datetime">
+| <DOUBLE_TKN: "Double"|"double">
+| <FLOAT_TKN: "Float"|"float" >
+
+| <OR_TKN: "or">
+| <AND_TKN: "and">
+| <NOT_TKN: "not"|"~">
+| <ASSIGN_TKN: "=">
+| <EQUAL_TKN: "==">
+| <NOTEQUAL_TKN: "<>">
+| <MORETHAN_TKN: ">">
+| <LESSTHAN_TKN: "<">
+| <MORETHANEQU_TKN: ">=">
+| <LESSTHANEQU_TKN: "<=">
+| <OBJECTEQUAL_TKN: "is">
+
+| <DOT_TKN: ".">
+| <SHARP_TKN: "#">
+| <ADD_TKN: "+">
+| <MINUS_TKN: "-">
+| <TIMES_TKN: "*">
+| <DIVIDE_TKN: "/">
+//| <INT_TKN: ("-")?["0"-"9"](["0"-"9"])*> 
+}
+
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|  < #LETTER: ["_","a"-"z","A"-"Z"] >
+|  < #DIGIT: ["0"-"9"] >
+}
+
+TOKEN : 
+{
+ <CSTRING_TKN: "\""( ~["\""])* "\"" >
+// <CSTRING_TKN:(\u4e00-\u9fa5)*  >  
+}
+
+//<Specification> ::= <Unit> *
+//<Unit> ::= <Spec Unit> | <Signature Unit> | <Axiom Unit> | <Definition Unit>
+//SpecUnit中不存每一个规约单元具体内容
+void specification(String specID,String subSpecID,String userID):{}
+{
+	  <LEFTBRACE_TKN>
+	  {	  	
+	  	System.out.println("160");
+	  	specName=specID;                          
+	  	subSpecName=subSpecID;
+	  	userName=userID;
+	  	System.out.println("164");
+	  	specST=new SpecSysTab(specID,subSpecID,userID); //带参数构造SpecSysTab
+	  	System.out.println("166");
+	  	specST.clear();                          //清除数据库中和specID、subSpecID相关的内容
+	  	specST.getExistSubSpec();                //读取数据库中specID中其他subSpec的内容，初始化类子名数组和操作名数组
+	  }
+	  (SpecUnit()|SigUnit()|AxiomUnit()|DefUnit())*  
+	  <RIGHTBRACE_TKN>
+	  
+}
+
+//<Spec unit> ::= 
+//  Spec<Sort Name> [<Observability>];
+//  [extends <Sort Names>] [uses <Sort Names>]
+//  <Signature>; [<Axioms>] 
+//  End
+//每解析一个sort单元就将解析结果存入数据库，并将sortName和operName存到specUnit
+void SpecUnit():{Token t;}
+{
+	<SPEC_TKN> t=Identifier()
+	{
+		System.out.println("begin to parse Spec Unit:" +t.image);
+		if(!specST.addUniqSN(t.image))   //判断sortID唯一性，若重复报错，否则将其名字存入specUnit中sortName数组
+		{
+			eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The Sort Name has been defined as an operation or a sort name.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;
+			
+		}
+		CurrSN=t.image; 
+		sortST=new SortSysTab();                //新建一个sortST单元
+		sortST.setSortName(t.image);		
+	}
+	(Observability())? <SEMICOLON_TKN>
+	(ExtendsSorts() <SEMICOLON_TKN>)?
+	(UsesSorts() <SEMICOLON_TKN>)?
+	Signature()  
+	(Axioms())? 
+	<END_TKN>
+	{
+		sortST.writeSortToDB(specName,subSpecName,userName);  //将该sort存入数据库
+//		System.out.println("Successfully parse the Spec Unit: " + CurrSN);
+	}
+}
+
+void SigUnit():{Token t;}    //处理和spec单元相同
+{
+	<SIG_TKN> t = Identifier()
+	{
+		System.out.println("begin to parse Sig Unit:" +t.image);
+		if(!specST.addUniqSN(t.image))
+		{
+			eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The Sort Name has been defined as an operation or a sort name.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;
+			
+		}
+		CurrSN=t.image;
+		sortST=new SortSysTab();
+		sortST.setSortName(t.image);		
+	}
+	(Observability())? <SEMICOLON_TKN>
+	(ExtendsSorts() <SEMICOLON_TKN>)?
+	(UsesSorts() <SEMICOLON_TKN>)?
+	Signature()
+	<END_TKN>
+	{
+		sortST.writeSortToDB(specName,subSpecName,userName);
+		System.out.println("Successfully parse the Signature Unit: " + CurrSN);
+	}
+	
+}
+
+//<Axiom Unit> ::=
+//  Axiom <Sort Name>;
+//    <Axiom List>
+//  End
+void AxiomUnit():{Token t;}
+{
+	<AXIOM_TKN> t = Identifier()
+	{
+		System.out.println("Begin to parse Axiom Unit: "+ t.image);
+		if(specST.isUniqSortName(t.image))  		//判定是否定义过该类子名,若未定义则报错
+		{
+			eTE = new TypeException(TypeError.SORT_NOT_DEFINED, "Its signature part has not been defined.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;	
+		}
+		else
+		{
+			sortST=new SortSysTab();                    //新建一个sortST用于当前公理对应的类子信息
+			sortST.setSortName(t.image);	
+			sortST.readSigFromDB(specName,subSpecName,userName);  //从数据库中读取当前类子的基调
+		}
+	}
+	<SEMICOLON_TKN>
+	AxiomList()
+	<END_TKN>
+	{
+		axSet.writeAxiomToDB(specName,subSpecName,sortST.getSortName(),userName);  //将公理写入数据库
+		System.out.println("Successfully parse the Axiom Unit: " + CurrSN);
+	}
+}
+
+//<Definition unit> ::= 
+//  Definition [uses <Sort Names>]
+//  <Signature>; [<Axioms>] 
+//  End
+//类子名为Definiton，其他与sort单元相同，该部分语义？
+void DefUnit():{}
+{
+	<DEF_TKN> 
+	{
+		System.out.println("Begin to parse Defintion Unit!");
+		//处理def单元
+		sortST=new SortSysTab();
+		sortST.setSortName("Definition");
+	}
+	(UsesSorts() <SEMICOLON_TKN>)?  
+	Signature()
+	(Axioms())? 
+	<END_TKN>
+	{
+		sortST.writeSortToDB(specName,subSpecName,userName);
+		System.out.println("Successfully parse the Defintion Unit! ");
+	}
+}
+
+//<Observability> ::= is unobservable | is observable by <Op Id>
+//？
+void Observability():{Token t;}
+{
+	<OBSERVABLE_TKN> t = Identifier()
+	{
+		sortST.setObOpName(t.image);
+	}
+	| <UNOBSERVABLE_TKN>
+}
+
+void ExtendsSorts():{}
+{
+	<EXTENDS_TKN> ExtendsSortList()
+}
+
+void ExtendsSortList():{Token t;}
+{	
+	t = Identifier()
+	{
+		//除了判断是否已经声明过是否需要其他判断？（比如是否已经定义过？或者最后判断）
+		if(!sortST.addUniqExSortToList(t.image))
+		{
+			eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The Sort Name has been acted as super one in the sort.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;
+		}		
+	}
+	(<COMMA_TKN> ExtendsSortList())?	
+}
+
+void UsesSorts():{}
+{
+	<USES_TKN> UsesSortList()
+}
+
+void UsesSortList():{Token t;}
+{
+	(t = Identifier()| t = BasicType())
+	{
+		//除了判断是否已经声明过是否需要其他判断？
+		if(!sortST.addUniqUsSortToList(t.image))
+		{
+			eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The Sort Name has been imported in the sort.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			System.out.println(sortST.getSortName());
+			throw eTE;
+			
+		}		
+	}
+	
+	(<COMMA_TKN> UsesSortList())?	
+}
+
+//<Signature> ::= {[<Constant>]|[<Attribute>]|[<Operator>]}*
+void Signature():{}
+{
+	//将extends和uses的基调包含进本类子（不需要）
+	(Constant()|Attribute()|Operation())*
+}
+
+void Constant():{}
+{
+	<CONST_TKN> <SELECTOR_TKN> ConstList() <SEMICOLON_TKN>
+}
+
+void ConstList():{Token t;}
+{
+	t=Identifier()
+	{
+		if(specST.isUniqSortName(t.image))   //判断是否和已经定义的sort名重复
+		{
+			if(sortST.checkOpName(t.image))   //判断是否和当前类子中的其他oper名重复
+			{
+				sortST.addConstOpName(t.image);
+				specST.addOperName(t.image);
+			}
+			else 
+			{
+				eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The ConstName has been used as operator name.", t);
+				main.messegeString=eTE.returnMessage();
+				System.out.println(eTE.prettyMessage());
+				throw eTE;	
+			}
+		}
+		else
+		{
+			eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The ConstName has been used as sort name.", t);
+			main.messegeString=eTE.returnMessage();			
+			System.out.println(eTE.prettyMessage());
+			throw eTE;	
+		}
+	}
+	(<COMMA_TKN> ConstList())?
+}
+
+//<Attribute> ::= Attr <AttrList>;
+void Attribute():{}
+{
+	<VAR_TKN> AttrList()
+}
+
+//<AttrList> ::= <AttributeType> [; <AttrList>]
+void AttrList():{}
+{
+	(AttributeType() <SEMICOLON_TKN>)+
+}
+
+//<AttributeType> ::= <Attr IDs> : <Sort Name>  
+// {对每个AttrID新建一个AttrUnit，初始化ID,Type后（需判断合法性）加入当前类子attrOpList数组}
+void AttributeType():{Token t;}
+{
+	AttrOpIDs()<SELECTOR_TKN>
+	(t = BasicType() {sortST.setAttrOpType(t.image);}   //可以是基本数据类型
+	| t = Identifier() 
+	{
+		if(sortST.checkOpType(t.image))        //检查类型合法性（为void或已经申明过的类子）
+		{
+			sortST.setAttrOpType(t.image);         //设置OpId的类型
+		}
+		else
+		{
+			eTE = new TypeException(TypeError.TYPESORT_NOT_Dclared, "The Attribute Type Sort has not been declared.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;
+		}   	}
+	)
+}
+
+//<Attr IDs> ::= <Attr ID> [, <Attr IDs>]
+//<Attr ID> ::= <Identifier> [ <Index> ]
+void AttrOpIDs():{Token t;String index = "";}
+{
+	t = Identifier()
+	{
+		attrOp=new AttrUnit();                 //新建一个AttrUnit对象
+		if(specST.isUniqSortName(t.image))     //判断是否和已有类子名冲突
+		{
+			if(sortST.checkOpName(t.image))    //检查是否和当前类子中的其他操作名冲突，不冲突则将其add到当前sort的操作op数组
+			{
+				specST.addOperName(t.image);   //类子名合法则将将其add到specST的oper数组
+				attrOp.setAttrName(t.image);   //设置当前attrOp的name
+			}
+			else
+			{
+				eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The AttrOpName has been used as operator name.", t);
+				main.messegeString=eTE.returnMessage();
+				System.out.println(eTE.prettyMessage());
+				throw eTE;	
+			}
+		}
+		else
+		{
+			eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The AttrOpName has been used as sort name.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;	
+		}
+	}
+	(index=Index(){attrOp.setIndexString(index);})?
+	{sortST.addAttrOpUnit(attrOp);}
+	(<COMMA_TKN> AttrOpIDs())?
+}
+
+//<Index> ::= "[" <Index set> "]" 
+String Index():{String index = "";}
+{
+	<LEFTBRACKET_TKN> index= IndexSet() <RIGHTBRACKET_TKN>
+	{return index;}
+}
+
+//<Index set> ::= (<Single Index>[,<Index set>]|*)
+String IndexSet():{Token t; String sIndex = ""; String index = "";}
+{
+	sIndex=SingleIndex(){index=index+sIndex;}
+	(t=<COMMA_TKN>{index=index+t.image;}sIndex=IndexSet(){index=index+sIndex;})?
+	{return index;}
+}
+
+//<Single Index> ::= <Enumerated ID> | <Lower bound> ".." <Upper bound>
+//<Lower bound> ::= <Natural number>
+//<Upper bound> ::= <Natural number> | "*" 
+String SingleIndex():{Token t; String sToken = "";}
+{
+	(((t = <POSITIVEINT_TKN>{ sToken += t.image;}
+	 t = <BETWEEN_TKN> { sToken += t.image;}
+	(t = <POSITIVEINT_TKN>{ sToken += t.image;} | t = <TIMES_TKN>){ sToken += t.image;})
+	| t = Identifier(){ sToken += t.image;})
+	|t = <TIMES_TKN>{ sToken += t.image;})                        //?
+	{return sToken;}
+}
+
+//<Operator> ::= Operation <OpList>;
+void Operation():{}
+{
+	<OPERATORS_TKN> OpList()
+}
+
+//<OpList> ::= <Operation> [; <OpList>]
+void OpList():{}
+{
+	(Oper() <SEMICOLON_TKN>)+
+}
+
+//<Operation> ::= <Operator ID> "(" <Domain Type> ")" ":" <Co-domain Type>
+void Oper():{Token t;}
+{
+	t = Identifier()
+	{
+		operOp=new OperUnit();         //新建一个OperUnit对象
+		if(specST.isUniqSortName(t.image))     //判断是否和已有类子名冲突
+		{
+			if(sortST.checkOpName(t.image))    //检查是否和当前类子中的其他操作名冲突，不冲突的话将其add到当前sort的操作op数组
+			{
+				specST.addOperName(t.image);   //类子名合法则将将其add到specST的oper数组
+				operOp.setOperName(t.image);   //设置当前operOp的name
+			}
+			else
+			{
+				eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The GenOpName has been used as operator name.", t);
+				main.messegeString=eTE.returnMessage();
+				System.out.println(eTE.prettyMessage());
+				throw eTE;	
+			}
+		}
+		else
+		{
+			eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The GenOpName has been used as sort name.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;	
+		}
+		//判断是否为obOp
+		
+	}
+	<LEFTPAREN_TKN> (t = <VOID_TKN>{operOp.addDomainType(t.image);}|DomainType()) <RIGHTPAREN_TKN>
+	<SELECTOR_TKN> (t = <VOID_TKN>{operOp.addCoDomainType(t.image);}|CodomainType())
+	{sortST.addOperOp(operOp);} 
+}
+
+//<Domain Type> ::= <Type> | voidvoid DomainType():{Token t;}{	(( t = BasicType()
+	{
+		operOp.addDomainType(t.image);
+	} )
+	|( t = Identifier()
+	{
+		if(sortST.checkOpType(t.image))        //检查类型合法性（为当前类子或已经申明过的类子）
+		{
+//			if(!operOp.addDomainType(t.image))  //检查唯一性后将该类型add到域数组//			{//				eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The Type has been acted as super one in domain.", t);//				System.out.println(eTE.prettyMessage());//				throw eTE;//			}     
+            operOp.addDomainType(t.image);
+		}
+		else
+		{
+			eTE = new TypeException(TypeError.TYPESORT_NOT_Dclared, "The DomainType has not been declared.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;
+		}   
+	}))
+	(<COMMA_TKN> DomainType())?}
+
+//<Co-domain Type> ::= <Type> | voidvoid CodomainType():{Token t;}{	(( t = BasicType(){operOp.addCoDomainType(t.image);} )
+	| t = Identifier()
+	{
+		if(sortST.checkOpType(t.image))         //检查类型合法性（为当前类子或已经申明过的类子）
+		{
+//			if(!operOp.addCoDomainType(t.image))//检查唯一性后将该类型add到域数组//			{//				eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The Type has been acted as super one in codomain.", t);//				System.out.println(eTE.prettyMessage());//				throw eTE;//			}   
+        operOp.addCoDomainType(t.image);
+        
+		}
+		else
+		{
+			eTE = new TypeException(TypeError.TYPESORT_NOT_Dclared, "The CoDomainType has not been declared.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;
+		}   
+	} )		(<COMMA_TKN> CodomainType())?}
+
+//<Axioms> ::= Axiom: <Axiom List>
+void Axioms():{}
+{
+  <AXIOM_TKN> 
+  AxiomList()
+}
+
+//<Axiom List> ::= <Axiom> [<Axiom List>]
+void AxiomList():{}
+{
+	{
+		axSet=new AxiomSet();
+	}
+	(Axiom())+
+	{sortST.addAxUnit(axSet);}
+}
+
+//<Axiom> ::= <Var Declarations> <Equations> End|<Equations> 
+void Axiom():{}
+{
+	{axUnit=new AxiomUnit();}
+	((VarDeclarations()
+	Equations()
+	{
+		axSet.addAxiomUnit(axUnit);
+	} <END_TKN>)
+	|(Equations()
+	{
+		axSet.addAxiomUnit(axUnit);
+		System.out.println("595");
+	}))
+}
+
+//<Var Declarations> ::= For all <Var-Sort Pairs> that  全局变量
+void VarDeclarations():{}
+{
+	<FORALL_TKN> VarSortPairs() <THAT_TKN>
+}
+
+//<Var-Sort Pairs> ::= <Var IDs> : <Sort Name> [, <Var-Sort Pairs>]
+void VarSortPairs():{}
+{
+	VarIDs() <SELECTOR_TKN> Type()
+	(<COMMA_TKN> VarSortPairs())? 
+}
+
+//<Var IDs> ::= <Var ID> [, <Var IDs>]
+void VarIDs():{Token t;}
+{
+	t = Identifier()
+	{
+		varST=new VarSysTab();
+		if(specST.isUniqSortName(t.image)&&specST.isUniqOperName(t.image))     //判断是否和已有类子名或操作名冲突{基本数据类型名？}
+		{
+			if(axUnit.addGlobVarName(t.image))    //检查是否和已经定义过的全局变量名冲突
+			{
+				{varST.setVarName(t.image);}
+			}
+			else
+			{
+				eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The VarName has been used as globalvarname.", t);
+				main.messegeString=eTE.returnMessage();
+				System.out.println(eTE.prettyMessage());
+				throw eTE;	
+			}
+		}
+		else
+		{
+			eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The VarName has been used as sort name or an operator name.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;	
+		}
+		axUnit.addGlobVarST(varST);
+	}
+	(<COMMA_TKN> VarIDs())?
+}
+
+//<Type> ::= <Sort Name>
+void Type():{Token t;}
+{
+	(t = BasicType(){axUnit.setVarType(t.image);}    //可以是基本数据类型
+	| t = Identifier()
+	{
+		if(sortST.checkOpType(t.image))        //检查类型合法性（为void或已经申明过的类子）
+		{
+			{axUnit.setVarType(t.image);       //设置OpId的类型
+            }
+		}
+		else
+		{
+			eTE = new TypeException(TypeError.TYPESORT_NOT_Dclared, "The Var Type Sort has not been declared.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;
+		}   
+	}
+	)
+}
+
+//<Equations> ::= <Equation> [<Equations>]
+void Equations():{}
+{
+	(Equation())+
+}
+
+//<Equation> ::=<Cond-Equation>|<Let-Equation>
+void Equation():{}
+{
+	{globalEST=new EquationSysTab();}
+	(CondEquation(){globalEST.addConEqua(condEST);}
+	|LetEquation(){globalEST.addLetEqua(letEST);})
+	{axUnit.addGlobE(globalEST);}
+}
+
+//<Cond-Equation> ::=<Condition>[<If-Conditions>];
+void CondEquation():{}
+{
+	{condEST=new CondEquation();}
+	(Condition(){condEST.setCond(conST);}
+	(<COMMA_TKN> <IF_TKN> Conditions())? <SEMICOLON_TKN>)
+}
+
+//<Let-Equation> ::=Let <Var Definitions> in <Cond-Equations> End
+void  LetEquation():{}
+{
+	{letEST=new LetEquation();}
+	(<LET_TKN>{isGEorLE="LE";} VarDefinitions() <IN_TKN> CondEquations(){isGEorLE="GE";letEST.addConEqua(condEST);} <END_TKN>)
+}
+
+//<Cond-Equations> ::=<Cond-Equation> [<Cond-Equations>]
+void CondEquations():{}
+{
+	(CondEquation())+
+}
+
+//<Condition> ::= <Term> <Relation OP> <Term> | ~<Condition>
+void Condition():{Token t; String returnType = "";String termName="";}
+{
+	{conST=new ConditionSysTab();}
+	((returnType=Term(){conST.setLeftType(returnType);conST.setLeftTerm(termString);}
+	t = RelationOP(){conST.setReOp(t.image);}
+	returnType=Term()){conST.setRightType(returnType);conST.setRightTerm(termString);}
+	| (t=<NOT_TKN> {conST.setConnector(t.image);} Condition()) )
+	{
+		if(!conST.checkType())            //类型检查
+		{
+			eTE = new TypeException(TypeError.TERMSTYPE_NOT_AGREE,"LeftTermType of "+conST.getLeftTerm()+" does not agree with RightTermType of "+conST.getRightTerm(), t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;
+		}
+	}
+}
+
+Token RelationOP() :
+{Token t;}
+{
+   ( t = <ASSIGN_TKN> 
+  | t = <NOTEQUAL_TKN> 
+  | t = <MORETHAN_TKN> 
+  | t = <LESSTHAN_TKN> 
+  | t = <MORETHANEQU_TKN> 
+  | t = <LESSTHANEQU_TKN> 
+  | t = <OBJECTEQUAL_TKN>
+  | t = <EQUAL_TKN>)
+  {
+    return t;
+  } 
+}
+
+//<If-Conditions>::= [, if <Conditions>]
+//<Conditions> ::= <UnionCondition> ["," <UnionCondition>]
+//<UnionCondition>::=<Condition> ("or"<Condition>)*
+void Conditions():{Token t;}
+{
+	Condition()
+	{condEST.addIfCond(conST);}
+	//	(t=<AND_TKN> | t=<OR_TKN>) Conditions()
+	(t=<COMMA_TKN>Conditions()
+	{conST.setConnector(t.image);})?
+}
+
+//<Var Definitions> ::=<Var Assignment> [, <Var Definitions>]
+void VarDefinitions():{}
+{
+	VarAssignment() (<COMMA_TKN> VarDefinitions())?
+}
+
+//<Var Assignment> ::= <Var ID> = <Term>
+void VarAssignment():{Token t; String returnType = "";}
+{
+	//局部变量
+	t= Identifier()               
+	{
+		if(specST.isUniqSortName(t.image)&&specST.isUniqOperName(t.image))     //判断是否和已有类子名或操作名冲突{基本数据类型名？}
+		{
+			if(axUnit.checkLocalVarName(t.image)&&letEST.addLocalV(t.image))    //检查是否和已经定义过的全局变量名冲突
+			{
+				varST=new VarSysTab();
+				varST.setVarName(t.image);
+			}
+			else
+	
+			{
+				eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The VarName has been defined.", t);
+				main.messegeString=eTE.returnMessage();
+				System.out.println(eTE.prettyMessage());
+				throw eTE;	
+			}
+		}
+		else
+		{
+			eTE = new TypeException(TypeError.UNIQUE_DUPLICATION, "The VarName has been used as sort name or an operator name.", t);
+			main.messegeString=eTE.returnMessage();
+			System.out.println(eTE.prettyMessage());
+			throw eTE;	
+		}
+
+	}
+	<ASSIGN_TKN> returnType=Term()
+	{
+		varST.setVarTerm(termString);
+		varST.setVarType(returnType);
+		letEST.addLocalVar(varST);
+	}
+}
+
+//<Term>::=<AddExpression>
+String Term():{String returntype;}
+{
+	{
+		termString="";
+		stSort=new Stack<String>();
+		stOper=new Stack<String>();
+	}
+	returntype=AddExpression()
+	{System.out.println("returntype:"+returntype);System.out.println("term:"+termString);return returntype;}
+}
+
+//<AddExpression>::=<MulticativeExpression>("+"|"-"|"*"|"/")<MulticativeExpression>*
+String AddExpression():{Token t;String returntype;}
+{
+	returntype=MulticativeExpression()(
+	(t=<ADD_TKN>|t=<MINUS_TKN>|t=<TIMES_TKN>|t=<DIVIDE_TKN>)
+	{termString+=t.image;}
+	MulticativeExpression())*
+	{
+		return returntype;
+	}
+}
+//<MulticativeExpression>::=
+//<UnaryExpression>("."|"#")<UnaryExpression>*
+String MulticativeExpression():{Token t;String type;String nType="";}
+{
+	(type=UnaryExpression()
+	{
+		if(type.equals("unknownOp!"))
+		{
+			type=sortST.checkOperType(currOper,specName,userName);
+			if(type.equals("ConstOp"))stOper.pop();
+		}
+	})
+	((t=<DOT_TKN>
+	{
+		if(type.equals("error!"))
+		{
+			System.out.println("varType is wrong!");
+		}	
+	}
+	|t=<SHARP_TKN>)
+	{termString+=t.image;}
+	nType=UnaryExpression()
+	{
+		if((sortST.isSort(type)))                 //type类型为当前类子
+		{
+			type="unknownOp!";                     //设置type类型为unknownOp!
+			if(nType.equals("unknownOp!"))        //nType为unknownOp!
+			{
+				type=sortST.checkOperType(currOper,specName,userName); //判断type类型   【判断参数类型】
+				stOper.pop();
+				if(isLB)					type=stSort.pop();				else 
+				    stSort.pop();
+				stSort.push(type);			}
+		}
+		else if(!specST.isUniqSortName(type))       //type类型为非当前类子  【判断参数类型】
+		{
+			tpSortST=new SortSysTab();
+			tpSortST.setSortName(type);
+			tpSortST.readSigFromDB(specName,userName);
+			type="unknownOp!";
+			
+			if(nType.equals("unknownOp!"))
+			{
+				type=tpSortST.checkOperType(currOper,specName,userName);
+				stOper.pop();
+				if(isLB)
+					type=stSort.pop();
+				else
+				    stSort.pop();
+				stSort.push(type);
+			}
+	    }
+	    else {System.out.println("leftDotType error!");}
+	})*
+	{
+	return type;
+	}
+}
+//<UnaryExpression>::="("<Term>")"
+//|Identifier["("<Parameters>")"]
+//|Identifier["[""]"]
+//|<CString>
+//|<NULL>
+//|<Bool>
+//|<POSITIVEINT_TKN>
+String UnaryExpression():{Token t;String type="";}
+{
+	((t=<LEFTPAREN_TKN>)          //带小括号
+	{
+		termString+=t.image;
+	}type=AddExpression()(t= <RIGHTPAREN_TKN>){termString+=t.image;}
+	|t=<LEFTBRACKET_TKN>         //带中括号
+	{
+		isLB=true;
+		termString+=t.image;
+	}type=AddExpression()
+	t= <RIGHTBRACKET_TKN>
+	{
+		//type=stSort.pop();
+		termString+=t.image;
+		isLB=false;
+	}
+	|
+	((t=BasicType()|t=Identifier()){termString+=t.image;}//字符，判断类型
+	{
+		//判断类型（类子名、操作名、变量名）
+		if(axUnit.isGlobalVar(t.image))   //全局变量
+		{
+			type=axUnit.getGlobalVarType(t.image);
+		    stSort.push(type);
+	    }
+		else if(sortST.isSort(t.image))   //当前类子名
+		{
+			type=t.image;
+			stSort.push(type);
+		}      
+		else if(isGEorLE.equals("LE"))    //局部等式中的局部变量
+		{
+			if(letEST.isLocalVar(t.image)) 
+			{
+			    type=letEST.getLocalVarType(t.image);
+			    stSort.push(type);
+			}
+			else                       //为未知合法操作名或非法
+		    {
+		    	type="unknownOp!";
+		    	System.out.println("jjt952"+t.image);
+		    	if(sortST.checkOperType(t.image,specName,userName).equals("ConstOp"))
+	    	    {
+	    	    	type=sortST.getSortName();
+	    	    	stSort.push(t.image);
+	    	    }
+	    	    else
+	    	    {
+	    	    	currOper=t.image;
+	    	    	stOper.push(t.image);
+	    	    } 
+		    }
+		}
+		else   //为未知合法操作名或非法
+	    {
+	    	type="unknownOp!";
+	    	if(sortST.checkOperType(t.image,specName,userName).equals("ConstOp"))
+	    	{
+	    		type=sortST.getSortName();
+	    		stSort.push(t.image);
+	    	}
+	    	else
+	    	{
+	    		currOper=t.image;
+	        	stOper.push(t.image);
+	    	}
+	        
+	    }  
+	}
+	((
+	  t=<LEFTPAREN_TKN>
+	  {
+	  	termString+=t.image;
+	  	paraTypeList=new ArrayList<String>();
+	  }
+	  Parameter()      //初始化参数类型数组
+	  t=<RIGHTPAREN_TKN>
+	  {
+	  	type="unknownOp!";
+	  	//currSort=stSort.peek();
+	  	currOper=stOper.peek();
+	  	//operOp=new operName();
+	  	//operOp.setOperName(operOp);
+	  	
+	  	termString+=t.image;
+	  })
+	  |
+	  (t=<LEFTBRACKET_TKN>)
+	  {termString+=t.image;}
+	  (t=Identifier()|t=<POSITIVEINT_TKN>)?
+	  t= <RIGHTBRACKET_TKN>
+	  {termString+=t.image;System.out.println("967"+termString);}
+	  )?)
+	|(t=<CSTRING_TKN>){termString+=t.image;type="String";}
+	|(t=<POSITIVEINT_TKN>){termString+=t.image;type="Integer";}
+    |(t=<REAL_TKN>){termString+=t.image;type="Real";}
+	|(t=<NULL_TKN>){termString+=t.image;type="Null";}
+	|BoolTerm(){type="Bool";})
+	{return type;}
+}
+
+//<Parameters>::=<AddExpression>
+void Parameter():{Token t;String paraType;}  //参数类型数组
+{
+	
+	paraType=MulticativeExpression()
+	{
+		stSort.pop();
+		paraTypeList.add(paraType);
+	}
+	(t=<COMMA_TKN>
+	{termString+=t.image;}
+	paraType= MulticativeExpression()
+	{paraTypeList.add(paraType);}
+	)*
+	{for(int i=0;i<paraTypeList.size();i++)
+	System.out.println("942"+paraTypeList.get(i));}
+}
+
+//<Bool Term> ::= True | False 
+void BoolTerm():{Token t;}
+{
+	(t=<TRUE_TKN>
+	|t=<FALSE_TKN>) 
+	{termString+=t.image;}
+}
+
+Token Identifier():{Token t;}
+{
+  t=<IDENTIFIER>
+  {return t;}
+}
+
+Token BasicType() :{Token t;}
+{
+  (  t=<BOOLEAN_TKN> 
+  | t=<INTEGER_TKN> 
+  | t=<LONG_TKN>   
+  | t=<STRING_TKN>  
+  | t=<DATETIME_TKN>
+  | t=<DOUBLE_TKN>  
+  | t=<FLOAT_TKN>)
+  {return t;}  
+}
