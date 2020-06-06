@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="edu.njust.hjj.asts.dao.OperationMapper" >
+    <resultMap id="OperationResultMap" type="edu.njust.hjj.asts.bean.OperationBean" >
+        <result column="optname" property="name" jdbcType="VARCHAR" />
+        <result column="optinput" property="argDT" jdbcType="VARCHAR" />
+        <result column="optoutput" property="retDT" jdbcType="VARCHAR" />
+        <result column="opttype" property="optType" jdbcType="VARCHAR" />
+        <result column="optbelong" property="optBelong" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectAllOpt" resultMap="OperationResultMap">
+        SELECT optname,optinput,optoutput,opttype,optbelong FROM operations
+    </select>
+
+    <select id="selectOpt" resultMap="OperationResultMap">
+        SELECT optname,optinput,optoutput,opttype,optbelong FROM operations WHERE optname=#{name}
+    </select>
+
+    <select id="selectRet" resultType="java.lang.String">
+        SELECT optoutput FROM operations WHERE optname=#{name}
+    </select>
+
+</mapper>

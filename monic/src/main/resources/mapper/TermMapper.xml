@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="edu.njust.hjj.asts.dao.TermMapper" >
+    <resultMap id="TermResultMap" type="edu.njust.hjj.asts.bean.TermBean" >
+        <result column="term" property="term" jdbcType="VARCHAR" />
+        <result column="iterm" property="iterm" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="seleteITerm" resultType="java.lang.String">
+        SELECT iterm FROM termiterm WHERE term=#{term}
+    </select>
+
+    <select id="selectAllTerm" resultType="java.lang.String">
+        SELECT term FROM termiterm
+    </select>
+
+</mapper>
