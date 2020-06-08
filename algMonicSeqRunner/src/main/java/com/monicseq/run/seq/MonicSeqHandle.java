@@ -125,6 +125,7 @@ public class MonicSeqHandle {
         int left = s.indexOf("(");
         int right = s.indexOf(")");
         String ps = s.substring(left+1,right);
+        paramBind(param,tdata);
         Request request = RequestBuilder.buildReq(ps,tdata);
         String url = request.getUrl();
         HttpRequest helloService = RequestExecutor.getReqRunner(request.getMethod());
@@ -227,6 +228,27 @@ public class MonicSeqHandle {
             String key = entry.getKey().toString();
             String value = entry.getValue().toString();
             log.info("参数:{} 参数的值：{}", key, value);
+        }
+    }
+
+    /**
+     * 二次约束后请求参数的绑定
+     * @param gloreq 二次约束生成的请求数据，格式：{ireq.index=4, dreq.index=4, dreq.id=1, ireq.id=1, greq.id=1}
+     * @param tdata 测试数据生成器生成的包含param以及general信息
+     */
+    private static void paramBind(Map<String, Object> gloreq, Map<String, Map<String, Object>> tdata) {
+        System.out.println("gloreq:"+gloreq);
+        Iterator iterator = gloreq.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            String key = entry.getKey().toString();
+            String value = entry.getValue().toString();
+            // 从key中截取变量名,eg:greq.id->greq
+            String gname = key.trim().substring(0,key.indexOf("."));
+            // 从key中截取参数,eg:greq.id->greq
+            String gpara = key.trim().substring(key.indexOf(".")+1);
+            HashMap<String,Object> params =(HashMap) tdata.get(gname).get("params");
+            params.put(gpara, value);
         }
     }
 
